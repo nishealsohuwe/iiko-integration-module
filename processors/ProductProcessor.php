@@ -60,7 +60,7 @@ class ProductProcessor
         if (!empty($item['allergens'])) {
             $attributes[] = [
                 'name'  => 'Аллергены',
-                'value' => implode(', ', $item['allergens'])
+                'value' => $item['allergens']
             ];
         }
 

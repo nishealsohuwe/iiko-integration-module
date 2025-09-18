@@ -34,8 +34,8 @@ try {
 
         // Добавляем процессоры
         $pipeline
-            ->addProcessor('categories', fn() => $catProcessor->getCategoriesFromExternalMenu())
-            ->addProcessor('products', fn() => $prodProcessor->getProductsFromExternalMenu());
+            ->addProcessor('categories', fn() => $catProcessor->getCategoriesFromMenu())
+            ->addProcessor('products', fn() => $prodProcessor->getProductsFromMenu());
 
         // Добавляем лоадеры
         $pipeline

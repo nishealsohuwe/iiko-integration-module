@@ -8,65 +8,62 @@ require_once dirname(__DIR__, 1).'/BaseDbLoader.php';
 
 class ProductCategoryLoader extends BaseDbLoader
 {
-    private int $store_id = 0;
-    private int $language_id = 1;
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
+    /**
+     * Загрузка категорий в БД OpenCart
+     */
     public function load(array $categories): void
     {
         foreach ($categories as $cat) {
             $iikoId = $this->db->real_escape_string($cat['iiko_id']);
-            $name   = $this->db->real_escape_string($cat['name']);
-            $desc   = $this->db->real_escape_string($cat['description']);
-            $image  = $this->db->real_escape_string($cat['image'] ?? '');
-            $parent = (int)$cat['parent_id'];
+            $name = $this->db->real_escape_string($cat['name']);
+            $description = $this->db->real_escape_string($cat['description']);
+            $parentId = (int)$cat['parent_id'];
+            $image = $cat['image'];
 
-            // ищем категорию по iiko_id
-            $res = $this->db->query("SELECT category_id FROM oc_category WHERE iiko_id = '{$iikoId}'");
-            if ($res && $res->num_rows > 0) {
-                $row = $res->fetch_assoc();
-                $category_id = (int)$row['category_id'];
+            // upsert в oc_category
+            $this->exec("
+                INSERT INTO `oc_category` 
+                SET `iiko_id` = '$iikoId',
+                    `parent_id` = $parentId,
+                    `top` = 1,
+                    `column` = 1,
+                    `sort_order` = 0,
+                    `status` = 1,
+                    `date_added` = NOW(),
+                    `date_modified` = NOW()
+                ON DUPLICATE KEY UPDATE 
+                    `parent_id` = VALUES(`parent_id`),
+                    `date_modified` = NOW()
+            ");
 
-                // обновляем категорию
-                $this->db->query("
-                    UPDATE oc_category 
-                    SET parent_id = {$parent}, image = '{$image}', status = ".($cat['is_deleted'] ? 0 : 1)." 
-                    WHERE category_id = {$category_id}
-                ");
-                $this->db->query("
-                    UPDATE oc_category_description 
-                    SET name = '{$name}', description = '{$desc}' 
-                    WHERE category_id = {$category_id} AND language_id = {$this->language_id}
-                ");
-            } else {
-                // создаем категорию
-                $this->db->query("
-                    INSERT INTO oc_category SET 
-                        parent_id = {$parent}, 
-                        top = 1,
-                        `column` = 1,
-                        sort_order = 0,
-                        status = ".($cat['is_deleted'] ? 0 : 1).",
-                        date_added = NOW(),
-                        date_modified = NOW(),
-                        iiko_id = '{$iikoId}',
-                        image = '{$image}'
-                ");
-                $category_id = $this->db->insert_id;
+            // Получаем ID категории в OpenCart
+            $res = $this->db->query("SELECT category_id FROM `oc_category` WHERE iiko_id = '$iikoId' LIMIT 1");
+            $row = $res->fetch_assoc();
+            $categoryId = (int)$row['category_id'];
 
-                $this->db->query("
-                    INSERT INTO oc_category_description SET 
-                        category_id = {$category_id},
-                        language_id = {$this->language_id},
-                        name = '{$name}',
-                        description = '{$desc}'
-                ");
+            // upsert в oc_category_description
+            $this->exec("
+                INSERT INTO `oc_category_description`
+                SET category_id = $categoryId,
+                    language_id = 1,
+                    name = '$name',
+                    description = '$description'
+                ON DUPLICATE KEY UPDATE 
+                    name = VALUES(name),
+                    description = VALUES(description)
+            ");
 
-                $this->db->query("
-                    INSERT INTO oc_category_to_store SET 
-                        category_id = {$category_id}, 
-                        store_id = {$this->store_id}
-                ");
-            }
+            // upsert в oc_category_to_store
+            $this->exec("
+                INSERT IGNORE INTO `oc_category_to_store`
+                SET category_id = $categoryId,
+                    store_id = 0
+            ");
         }
 
         echo "✅ Категории загружены в OpenCart\n";
