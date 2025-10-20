@@ -1,8 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../workers/IikoApiWorker.php';
+require_once __DIR__ . '/../processors/BaseProcessor.php';
 
-class ProductCategoryProcessor
+class ProductCategoryProcessor extends BaseProcessor
 {
     private $iiko;
 
@@ -21,13 +22,17 @@ class ProductCategoryProcessor
         $processed = [];
 
         foreach ($menu['groups'] ?? [] as $cat) {
+            if(count($cat['imageLinks']) > 0) {
+                $image = $this->downloadImage($cat['imageLinks'][0], $cat['name']);
+            }
+
             $processed[] = [
-                'iiko_id' => $cat['id'] ?? null,
-                'parent_id' => $cat['parentGroup'] ?? 0, // у productCategories родителя нет
-                'name' => $cat['name'] ?? '',
-                'description' => $cat['description'] ?? '',
-                'image' => $cat['imageLinks'][0] ?? null,
-                'is_deleted' => $cat['isDeleted'] ?? false,
+                'iiko_id'       => $cat['id'] ?? null,
+                'parent_id'     => $cat['parentGroup'] ?? 0, // у productCategories родителя нет
+                'name'          => $cat['name'] ?? '',
+                'description'   => $cat['description'] ?? '',
+                'image'         => $image ?? null,
+                'is_deleted'    => $cat['isDeleted'] ?? false,
             ];
         }
         return $processed;
@@ -88,4 +93,6 @@ class ProductCategoryProcessor
         }
         return $processed;
     }
+
+
 }

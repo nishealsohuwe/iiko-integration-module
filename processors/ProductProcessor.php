@@ -1,8 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../workers/IikoApiWorker.php';
+require_once __DIR__ . '/../processors/BaseProcessor.php';
 
-class ProductProcessor
+class ProductProcessor extends BaseProcessor
 {
     private $iiko;
 
@@ -111,13 +112,20 @@ class ProductProcessor
     {
         $processed = [];
         foreach ($products as $product) {
+            if(count($product['imageLinks']) > 0) {
+                $image = $this->downloadImage($product['imageLinks'][0], $product['name']);
+                echo '<br>';
+                var_dump($image);
+                echo '<br>';
+            }
+
             $processed[] = [
                 'iiko_id'     => $product['id'] ?? null,
                 'name'        => $product['name'] ?? '',
                 'description' => $product['description'] ?? '',
                 'category_id' => $product['parentGroup'] ?? null,
                 'price'       => $product['sizePrices'][0]['price']['currentPrice'] ?? 0,
-                'image'       => $product['imageLinks'][0] ?? null,
+                'image'       => $image ?? null,
                 'is_deleted'  => $product['isDeleted'] ?? false,
                 'attributes'  => $this->extractAttributes($product),
                 'options'     => $product['modifiers'] ?? [],

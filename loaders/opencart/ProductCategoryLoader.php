@@ -8,11 +8,6 @@ require_once dirname(__DIR__, 1).'/BaseDbLoader.php';
 
 class ProductCategoryLoader extends BaseDbLoader
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
      * Загрузка категорий в БД OpenCart
      */
@@ -30,14 +25,16 @@ class ProductCategoryLoader extends BaseDbLoader
                 INSERT INTO `oc_category` 
                 SET `iiko_id` = '$iikoId',
                     `parent_id` = $parentId,
+                    `image` = '$image',
                     `top` = 1,
                     `column` = 1,
-                    `sort_order` = 0,
+                    `sort_order` = 10,
                     `status` = 1,
                     `date_added` = NOW(),
                     `date_modified` = NOW()
                 ON DUPLICATE KEY UPDATE 
                     `parent_id` = VALUES(`parent_id`),
+                    `image` = VALUES(`image`),
                     `date_modified` = NOW()
             ");
 
@@ -63,6 +60,15 @@ class ProductCategoryLoader extends BaseDbLoader
                 INSERT IGNORE INTO `oc_category_to_store`
                 SET category_id = $categoryId,
                     store_id = 0
+            ");
+
+
+            // upsert в oc_category_path
+            $this->exec("
+                INSERT IGNORE INTO `oc_category_path`
+                SET category_id = $categoryId,
+                    path_id = $categoryId,
+                    level = 0
             ");
         }
 

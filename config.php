@@ -1,5 +1,10 @@
 <?php
 
+$configPath = dirname(__DIR__, 1) . '/config.php';
+if (file_exists($configPath)) {
+    require_once $configPath;
+}
+
 return [
 //    'iiko_token' => 'c8e705c908a14219af3eedf3a30b4e3c',        // Сказка Востока
     'iiko_token' => '147fd5b664144629a0f0cc8a64ee6634',          // Японский Экспресс
@@ -8,11 +13,13 @@ return [
 
     'iiko_external_menu_id' => '58523',
 
+    'bulk_item_update' => 100,
+    'images_path' =>  DIR_IMAGE . 'catalog/products/',
     'db' => [
         'host' => 'localhost',
         'port' => 3306,
-        'user' => 'iiko_user',
-        'pass' => 'iiko_pass',
-        'name' => 'iiko_integration'
+        'user' => 'japan_expres',
+        'pass' => 'N8RQH7HjyWfMDQuX',
+        'name' => 'japan_expres'
     ]
 ];
