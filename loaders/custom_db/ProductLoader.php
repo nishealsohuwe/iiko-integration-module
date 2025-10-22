@@ -34,26 +34,11 @@ class CustomProductLoader extends BaseDbLoader
             $this->exec("
                 INSERT INTO `product`
                 SET `iiko_id` = '$iikoId',
+                    `model` = '$iikoId',
                     `name` = '$name',
                     `description` = '$description',
-                    `model` = '$iikoId',
-                    `quantity` = 9999,
-                    `stock_status_id` = 7,
-                    `image` = '$image',
-                    `manufacturer_id` = 0,
-                    `shipping` = 1,
                     `price` = $price,
-                    `points` = 0,
-                    `tax_class_id` = 0,
-                    `date_available` = NOW(),
-                    `weight` = 0,
-                    `weight_class_id` = 1,
-                    `length` = 0,
-                    `width` = 0,
-                    `height` = 0,
-                    `length_class_id` = 1,
-                    `subtract` = 0,
-                    `minimum` = 1,
+                    `quantity` = 9999,
                     `sort_order` = 0,
                     `status` = 1,
                     `date_added` = NOW(),
@@ -62,7 +47,6 @@ class CustomProductLoader extends BaseDbLoader
                     price = VALUES(price),
                     name = VALUES(name),
                     description = VALUES(description),
-                    image = VALUES(image),
                     date_modified = NOW()
             ");
 
