@@ -1,12 +1,12 @@
 <?php
 /**
  * setup.php
- * Скрипт подготовки БД OpenCart под синхронизацию с iiko
+ * Скрипт подготовки кастомной БД под синхронизацию с iiko
  */
 
-require_once __DIR__ . '/loaders/BaseDbLoader.php';
+require_once __DIR__ . '/../loaders/BaseDbLoader.php';
 
-class Setup extends BaseDbLoader
+class CustomSetup extends BaseDbLoader
 {
     /**
      * @throws Exception
@@ -138,7 +138,7 @@ class Setup extends BaseDbLoader
 }
 
 try {
-    (new Setup())->run();
+    (new CustomSetup())->run();
 } catch (Exception $e) {
     echo "❌ Ошибка setup: " . $e->getMessage() . "\n";
 }

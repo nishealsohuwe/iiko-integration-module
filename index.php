@@ -1,13 +1,13 @@
 <?php
 
-use opencart\ProductCategoryLoader;
-use opencart\ProductLoader;
+use customDb\CustomProductCategoryLoader;
+use customDb\CustomProductLoader;
 
 require_once __DIR__ . '/workers/IikoApiWorker.php';
 require_once __DIR__ . '/processors/ProductCategoryProcessor.php';
 require_once __DIR__ . '/processors/ProductProcessor.php';
-require_once __DIR__ . '/loaders/opencart/ProductCategoryLoader.php';
-require_once __DIR__ . '/loaders/opencart/ProductLoader.php';
+require_once __DIR__ . '/loaders/custom_db/ProductCategoryLoader.php';
+require_once __DIR__ . '/loaders/custom_db/ProductLoader.php';
 require_once __DIR__ . '/core/IntegrationPipeline.php';
 
 try {
@@ -19,15 +19,15 @@ try {
 
     if (!empty($orgs['organizations'][0]['id'])) {
         $orgId = $orgs['organizations'][0]['id'];
-        echo "▶ Используем организацию: {$orgId}\n";
+        echo "▶ Используем организацию: {$orgId}" . PHP_EOL;
 
         // 3. Создаём процессоры
         $catProcessor  = new ProductCategoryProcessor();
         $prodProcessor = new ProductProcessor();
 
         // 4. Создаём лоадеры (MySQL)
-        $catLoader = new ProductCategoryLoader();
-        $prodLoader = new ProductLoader();
+        $catLoader = new CustomProductCategoryLoader();
+        $prodLoader = new CustomProductLoader();
 
         // 5. Настраиваем pipeline
         $pipeline = new IntegrationPipeline();
@@ -45,7 +45,7 @@ try {
         // 6. Запускаем интеграцию
         $pipeline->run();
     } else {
-        echo "❌ Не удалось получить organizationId\n";
+        echo "❌ Не удалось получить organizationId" . PHP_EOL;
     }
 
 } catch (Exception $e) {

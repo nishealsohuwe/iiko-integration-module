@@ -1,12 +1,12 @@
 <?php
 
-namespace opencart;
+namespace customDb;
 
 use BaseDbLoader;
 
 require_once dirname(__DIR__, 1).'/BaseDbLoader.php';
 
-class OpencartProductLoader extends BaseDbLoader
+class CustomProductLoader extends BaseDbLoader
 {
     public function __construct()
     {
@@ -14,7 +14,7 @@ class OpencartProductLoader extends BaseDbLoader
     }
 
     /**
-     * Загрузка продуктов в БД OpenCart
+     * Загрузка продуктов в кастомную БД
      */
     public function load(array $products): void
     {
@@ -27,21 +27,16 @@ class OpencartProductLoader extends BaseDbLoader
             $categoryIikoId = $this->db->real_escape_string($prod['category_id']);
 
             // находим id категории в OpenCart
-            $res = $this->db->query("SELECT category_id FROM `oc_category` WHERE iiko_id = '$categoryIikoId' LIMIT 1");
+            $res = $this->db->query("SELECT category_id FROM `category` WHERE iiko_id = '$categoryIikoId' LIMIT 1");
             $categoryId = $res && $res->num_rows > 0 ? (int)$res->fetch_assoc()['category_id'] : 0;
 
-            // upsert в oc_product
+            // upsert в product
             $this->exec("
-                INSERT INTO `oc_product`
+                INSERT INTO `product`
                 SET `iiko_id` = '$iikoId',
+                    `name` = '$name',
+                    `description` = '$description',
                     `model` = '$iikoId',
-                    `sku` = '',
-                    `upc` = '',
-                    `ean` = '',
-                    `jan` = '',
-                    `isbn` = '',
-                    `mpn` = '',
-                    `location` = '',
                     `quantity` = 9999,
                     `stock_status_id` = 7,
                     `image` = '$image',
@@ -65,38 +60,21 @@ class OpencartProductLoader extends BaseDbLoader
                     `date_modified` = NOW()
                 ON DUPLICATE KEY UPDATE
                     price = VALUES(price),
+                    name = VALUES(name),
+                    description = VALUES(description),
                     image = VALUES(image),
                     date_modified = NOW()
             ");
 
             // получаем product_id
-            $res = $this->db->query("SELECT product_id FROM `oc_product` WHERE iiko_id = '$iikoId' LIMIT 1");
+            $res = $this->db->query("SELECT product_id FROM `product` WHERE iiko_id = '$iikoId' LIMIT 1");
             $row = $res->fetch_assoc();
             $productId = (int)$row['product_id'];
-
-            // upsert в oc_product_description
-            $this->exec("
-                INSERT INTO `oc_product_description`
-                SET product_id = $productId,
-                    language_id = 1,
-                    name = '$name',
-                    description = '$description'
-                ON DUPLICATE KEY UPDATE
-                    name = VALUES(name),
-                    description = VALUES(description)
-            ");
-
-            // связь с магазином
-            $this->exec("
-                INSERT IGNORE INTO `oc_product_to_store`
-                SET product_id = $productId,
-                    store_id = 0
-            ");
 
             // связь с категорией
             if ($categoryId > 0) {
                 $this->exec("
-                    INSERT IGNORE INTO `oc_product_to_category`
+                    INSERT IGNORE INTO `product_to_category`
                     SET product_id = $productId,
                         category_id = $categoryId
                 ");

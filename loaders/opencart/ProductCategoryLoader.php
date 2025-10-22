@@ -6,7 +6,7 @@ use BaseDbLoader;
 
 require_once dirname(__DIR__, 1).'/BaseDbLoader.php';
 
-class ProductCategoryLoader extends BaseDbLoader
+class OpencartProductCategoryLoader extends BaseDbLoader
 {
     /**
      * Загрузка категорий в БД OpenCart
@@ -22,7 +22,7 @@ class ProductCategoryLoader extends BaseDbLoader
 
             // upsert в oc_category
             $this->exec("
-                INSERT INTO `oc_category` 
+                INSERT INTO `oc_category`
                 SET `iiko_id` = '$iikoId',
                     `parent_id` = $parentId,
                     `image` = '$image',
@@ -32,7 +32,7 @@ class ProductCategoryLoader extends BaseDbLoader
                     `status` = 1,
                     `date_added` = NOW(),
                     `date_modified` = NOW()
-                ON DUPLICATE KEY UPDATE 
+                ON DUPLICATE KEY UPDATE
                     `parent_id` = VALUES(`parent_id`),
                     `image` = VALUES(`image`),
                     `date_modified` = NOW()
@@ -50,7 +50,7 @@ class ProductCategoryLoader extends BaseDbLoader
                     language_id = 1,
                     name = '$name',
                     description = '$description'
-                ON DUPLICATE KEY UPDATE 
+                ON DUPLICATE KEY UPDATE
                     name = VALUES(name),
                     description = VALUES(description)
             ");
