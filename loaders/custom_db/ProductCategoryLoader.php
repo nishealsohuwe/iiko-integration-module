@@ -16,33 +16,21 @@ class CustomProductCategoryLoader extends BaseDbLoader
         foreach ($categories as $cat) {
             $iikoId = $this->db->real_escape_string($cat['iiko_id']);
             $name = $this->db->real_escape_string($cat['name']);
-            $description = $this->db->real_escape_string($cat['description']);
-            $parentId = (int)$cat['parent_id'];
-            $image = $cat['image'];
 
             // upsert в category
             $this->exec("
-                INSERT INTO `category`
-                SET `iiko_id` = '$iikoId',
+                INSERT INTO `categories`
+                SET `iiko_group_id` = '$iikoId',
                     `name` = '$name',
-                    `description` = '$description',
-                    `image` = '$image',
-                    `parent_id` = $parentId,
-                    `top` = 1,
-                    `column` = 1,
-                    `sort_order` = 10,
-                    `status` = 1,
-                    `date_added` = NOW(),
-                    `date_modified` = NOW()
+                    `api_id` = '$iikoId',
+                    `created_at` = NOW(),
+                    `updated_at` = NOW()
                 ON DUPLICATE KEY UPDATE
-                    `parent_id` = VALUES(`parent_id`),
                     `name` = VALUES(`name`),
-                    `description` = VALUES(`description`),
-                    `image` = VALUES(`image`),
-                    `date_modified` = NOW()
+                    `updated_at` = NOW()
             ");
         }
 
-        echo "✅ Категории загружены в OpenCart\n";
+        echo "✅ Категории загружены в БД\n";
     }
 }

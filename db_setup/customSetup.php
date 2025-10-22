@@ -15,105 +15,110 @@ class CustomSetup extends BaseDbLoader
     {
         // --- Категории ---
         $this->exec("
-            CREATE TABLE IF NOT EXISTS `category` (
-                `category_id` INT(11) NOT NULL AUTO_INCREMENT,
+            CREATE TABLE IF NOT EXISTS `categories` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 `name` VARCHAR(255) NOT NULL,
-                `description` TEXT NOT NULL,
-                `image` VARCHAR(255) DEFAULT NULL,
-                `parent_id` INT(11) NOT NULL DEFAULT 0,
-                `top` TINYINT(1) NOT NULL DEFAULT 0,
-                `column` INT(3) NOT NULL DEFAULT 1,
-                `sort_order` INT(3) NOT NULL DEFAULT 0,
-                `status` TINYINT(1) NOT NULL DEFAULT 1,
-                `date_added` DATETIME NOT NULL,
-                `date_modified` DATETIME NOT NULL,
-                PRIMARY KEY (`category_id`)
+                `api_id` VARCHAR(255) DEFAULT NULL,
+                `iiko_group_id` VARCHAR(255) UNIQUE NOT NULL,
+                `created_at` DATETIME NOT NULL,
+                `updated_at` DATETIME NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ");
 
-        $this->addColumnIfNotExists('category', 'iiko_id', "VARCHAR(64) DEFAULT NULL");
-        $this->addUniqueIfNotExists('category', 'iiko_id');
-
-        // --- Продукты ---
+        // --- Товары в категориях ---
         $this->exec("
-            CREATE TABLE IF NOT EXISTS `product` (
-                `product_id` INT(11) NOT NULL AUTO_INCREMENT,
-                `model` VARCHAR(64) NOT NULL,
-                `name` VARCHAR(255) NOT NULL,
-                `description` TEXT NOT NULL,
-                `price` DECIMAL(15,4) NOT NULL DEFAULT 0.0000,
-                `quantity` INT(4) NOT NULL DEFAULT 9999,
-                `sort_order` INT(4) NOT NULL DEFAULT 0,
-                `status` TINYINT(1) NOT NULL DEFAULT 1,
-                `date_added` DATETIME NOT NULL,
-                `date_modified` DATETIME NOT NULL,
-                PRIMARY KEY (`product_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        ");
-
-        $this->addColumnIfNotExists('product', 'iiko_id', "VARCHAR(64) DEFAULT NULL");
-        $this->addUniqueIfNotExists('product', 'iiko_id');
-
-        // --- Связка товара с категорией ---
-        $this->exec("
-            CREATE TABLE IF NOT EXISTS `product_to_category` (
-                `product_id` INT(11) NOT NULL,
+            CREATE TABLE IF NOT EXISTS `products_to_categories` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 `category_id` INT(11) NOT NULL,
-                PRIMARY KEY (`product_id`, `category_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        ");
-
-        // --- Атрибуты ---
-        $this->exec("
-            CREATE TABLE IF NOT EXISTS `attribute` (
-                `attribute_id` INT(11) NOT NULL AUTO_INCREMENT,
-                `attribute_group_id` INT(11) NOT NULL,
-                `name` VARCHAR(64) NOT NULL,
-                `sort_order` INT(3) NOT NULL DEFAULT 0,
-                PRIMARY KEY (`attribute_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        ");
-
-        $this->exec("
-            CREATE TABLE IF NOT EXISTS `product_attribute` (
                 `product_id` INT(11) NOT NULL,
-                `attribute_id` INT(11) NOT NULL,
-                `text` TEXT NOT NULL,
-                PRIMARY KEY (`product_id`, `attribute_id`)
+                `created_at` DATETIME NOT NULL,
+                `updated_at` DATETIME NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ");
 
-        // --- Опции ---
+        // --- Товары ---
         $this->exec("
-            CREATE TABLE IF NOT EXISTS `option` (
-                `option_id` INT(11) NOT NULL AUTO_INCREMENT,
-                `name` VARCHAR(128) NOT NULL,
-                `type` VARCHAR(32) NOT NULL,
-                `sort_order` INT(3) NOT NULL DEFAULT 0,
-                PRIMARY KEY (`option_id`)
+            CREATE TABLE IF NOT EXISTS `products` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `name` VARCHAR(255) NOT NULL,
+                `description` TEXT,
+                `sku` VARCHAR(255) NOT NULL,
+                `item_id` VARCHAR(255) NOT NULL UNIQUE,
+                `measure_unit` ENUM('1','2','3'),
+                `type` ENUM('1','2','3'),
+                `created_at` DATETIME NOT NULL,
+                `updated_at` DATETIME NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ");
 
+        // --- Вариации товаров ---
         $this->exec("
-            CREATE TABLE IF NOT EXISTS `product_option` (
-                `product_option_id` INT(11) NOT NULL AUTO_INCREMENT,
+            CREATE TABLE IF NOT EXISTS `product_variation` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 `product_id` INT(11) NOT NULL,
-                `option_id` INT(11) NOT NULL,
-                `required` BOOL NOT NULL DEFAULT false,
-                PRIMARY KEY (`product_option_id`)
+                `size_name` VARCHAR(255) NOT NULL,
+                `size_code` VARCHAR(255) NOT NULL,
+                `sku` VARCHAR(255) NOT NULL UNIQUE,
+                `weight` FLOAT(11),
+                `measure_unit` ENUM('1','2','3'),
+                `price` FLOAT(11),
+                `nutritions` JSON,
+                `created_at` DATETIME NOT NULL,
+                `updated_at` DATETIME NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ");
 
+        // --- Изображения вариации товара ---
         $this->exec("
-            CREATE TABLE IF NOT EXISTS `product_option_value` (
-                `product_option_value_id` INT(11) NOT NULL AUTO_INCREMENT,
-                `product_option_id` INT(11) NOT NULL,
-                `product_id` INT(11) NOT NULL,
-                `option_id` INT(11) NOT NULL,
-                `option_value_id` INT(11) NOT NULL,
-                `price` DECIMAL(15,4) NOT NULL DEFAULT 0.0000,
-                `price_prefix` CHAR(1) NOT NULL DEFAULT '+',
-                PRIMARY KEY (`product_option_value_id`)
+            CREATE TABLE IF NOT EXISTS `product_variation_images` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `image_path` VARCHAR(255) NOT NULL,
+                `product_variation_id` INT(11) NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
+
+        // --- Группы модификаторов к вариациям товаров ---
+        $this->exec("
+            CREATE TABLE IF NOT EXISTS `modifier_groups_to_product_variations` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `modifier_group_id` INT(11) NOT NULL,
+                `product_variation_id` INT(11) NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
+
+        // --- Группы модификаторов ---
+        $this->exec("
+            CREATE TABLE IF NOT EXISTS `modifier_groups` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `name` VARCHAR(255) NOT NULL,
+                `description` TEXT,
+                `iiko_group_id` VARCHAR(11) UNIQUE,
+                `sku` VARCHAR(255) NOT NULL,
+                `created_at` DATETIME NOT NULL,
+                `updated_at` DATETIME NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
+
+        // --- Модификаторы к группам модификаторов ---
+        $this->exec("
+            CREATE TABLE IF NOT EXISTS `modifiers_to_modifier_groups` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `modifier_id` INT(11) NOT NULL,
+                `modifier_group_id` INT(11) NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
+
+        // --- Модификаторы ---
+        $this->exec("
+            CREATE TABLE IF NOT EXISTS `modifiers` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT,
+                `name` VARCHAR(255) NOT NULL,
+                `description` TEXT,
+                `sku` VARCHAR(255) NOT NULL,
+                `iiko_item_id` INT(11) NOT NULL UNIQUE,
+                `created_at` DATETIME NOT NULL,
+                `updated_at` DATETIME NOT NULL,
+                PRIMARY KEY (`id`, `iiko_item_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ");
 
