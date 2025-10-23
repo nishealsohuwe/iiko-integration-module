@@ -33,6 +33,9 @@ class ProductProcessor extends BaseProcessor
                     'is_deleted'  => $item['isHidden'] ?? false,
                     'attributes'  => $this->extractAttributes($item),
                     'options'     => $this->extractOptions($item),
+                    'sku'         => $item['sku'] ?? '',
+                    'measure_unit'=> $item['measureUnit'] ?? '',
+                    'variations'  => $item['itemSizes'] ?? [],
                 ];
             }
         }
@@ -129,6 +132,9 @@ class ProductProcessor extends BaseProcessor
                 'is_deleted'  => $product['isDeleted'] ?? false,
                 'attributes'  => $this->extractAttributes($product),
                 'options'     => $product['modifiers'] ?? [],
+                'sku'         => $product['sku'] ?? '',
+                'measure_unit'=> $product['measureUnit'] ?? '',
+                'variations'  => $product['itemSizes'] ?? [],
             ];
         }
         return $processed;

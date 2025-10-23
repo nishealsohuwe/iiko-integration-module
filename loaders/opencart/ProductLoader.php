@@ -6,7 +6,7 @@ use BaseDbLoader;
 
 require_once dirname(__DIR__, 1).'/BaseDbLoader.php';
 
-class ProductLoader extends BaseDbLoader
+class OpencartProductLoader extends BaseDbLoader
 {
     public function __construct()
     {
@@ -63,7 +63,7 @@ class ProductLoader extends BaseDbLoader
                     `status` = 1,
                     `date_added` = NOW(),
                     `date_modified` = NOW()
-                ON DUPLICATE KEY UPDATE 
+                ON DUPLICATE KEY UPDATE
                     price = VALUES(price),
                     image = VALUES(image),
                     date_modified = NOW()
@@ -81,7 +81,7 @@ class ProductLoader extends BaseDbLoader
                     language_id = 1,
                     name = '$name',
                     description = '$description'
-                ON DUPLICATE KEY UPDATE 
+                ON DUPLICATE KEY UPDATE
                     name = VALUES(name),
                     description = VALUES(description)
             ");
